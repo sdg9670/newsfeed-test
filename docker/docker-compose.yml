@@ -1,0 +1,30 @@
+version: '3.1'
+
+services:
+  mongo:
+    build:
+      context: ./mongodb_replica
+      args:
+        MONGO_VERSION: 6
+    ports:
+      - '27017:27017'
+    healthcheck:
+      test: ['CMD', 'mongosh', 'admin', '--port', '27017', '--eval', "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+    environment:
+      MONGO_REPLICA_HOST: localhost
+      MONGO_REPLICA_PORT: 27017
+      MONGO_COMMAND: 'mongosh'
+  mongo-express:
+    image: mongo-express
+    depends_on:
+      - mongo
+    ports:
+      - '8081:8081'
+    network_mode: "host"
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: root
+      ME_CONFIG_BASICAUTH_PASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://localhost:27017
